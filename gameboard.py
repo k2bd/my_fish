@@ -20,7 +20,6 @@ tile_palette = [
 ]
 
 class GameBoard:
-    
     def __init__(self, nplayers):
         self.board = {} # Coords : Tile
         self.offset = hex_coords.ODD
