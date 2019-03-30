@@ -119,6 +119,11 @@ class App:
             if tile.highlighted:
                 self.draw_hex(tile.color, tile.coords, width=5)
 
+        # Draw previous move
+        if self.board.prev_move is not None:
+            self.draw_line(self.board.players[(self.board.current_player-1) % self.board.nplayers].color, 
+                self.prev_move[0], self.prev_move[1], width=2)
+
         # Draw a line to valid moves
         for orig, targ in self.board.getPossibleActions():
             if (self.selected_piece is not None) and \

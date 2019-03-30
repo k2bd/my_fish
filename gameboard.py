@@ -25,6 +25,8 @@ class GameBoard:
         self.board = {} # Coords : Tile
         self.offset = hex_coords.ODD
 
+        self.prev_move = None
+
         self.nplayers = nplayers
         if self.nplayers == 2:
             self.pieces_per_player = 4
@@ -96,6 +98,7 @@ class GameBoard:
             dup = copy.deepcopy(self)
             orig, targ = action
             dup.players[dup.current_player].points += dup.board[orig].value
+            dup.prev_move = (orig, targ)
             for piece in dup.players[dup.current_player].pieces:
                 if piece.pos.coords == orig:
                     piece.pos.coords = targ
