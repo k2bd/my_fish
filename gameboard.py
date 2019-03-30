@@ -98,7 +98,7 @@ class GameBoard:
             dup = copy.deepcopy(self)
             orig, targ = action
             dup.players[dup.current_player].points += dup.board[orig].value
-            dup.prev_move = (orig, targ)
+            dup.prev_move = (dup.current_player, (orig, targ))
             for piece in dup.players[dup.current_player].pieces:
                 if piece.pos.coords == orig:
                     piece.pos.coords = targ
@@ -122,10 +122,13 @@ class GameBoard:
             return False
     
     def getReward(self):
+        if not self.isTerminal():
+            return False
+        
         if all(self.players[self.PROTAGONIST].points > self.players[i].points for i in range(self.nplayers) if i != self.PROTAGONIST):
             return 1
         else:
-            return 0
+            return -1
 
 class Player:
     def __init__(self, num): # TODO: controller, etc

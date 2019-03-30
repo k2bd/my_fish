@@ -15,7 +15,7 @@ class PlayerType(Enum):
     TRIVIAL_MCTS = 2
 
 class App:
-    def __init__(self, players):
+    def __init__(self, players, bot_time_limit_ms = 5000):
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640, 400
@@ -34,7 +34,7 @@ class App:
                 self.controllers.append(None)
             elif p == PlayerType.TRIVIAL_MCTS:
                 from bots.trivial_mcts import MctsPlayer
-                self.controllers.append(MctsPlayer(i))
+                self.controllers.append(MctsPlayer(i, bot_time_limit_ms))
 
         self.board = GameBoard(len(players))
 
@@ -96,11 +96,15 @@ class App:
         if selected in self.board.board.keys():
             self.board.board[selected].highlighted = True
 
-        if len(self.board.getPossibleActions()) == 0:
-            for i in range(self.board.players):
-                player = self.board.players[i]
-                print(i, player.score)
-            self._running = False
+        orig_player = self.board.current_player
+        while len(self.board.getPossibleActions()) == 0:
+            self.board.current_player = (self.board.current_player + 1) % self.board.nplayers
+            if self.board.current_player == orig_player:
+                for i in range(len(self.board.players)):
+                    player = self.board.players[i]
+                    print(i, player.points)
+                self._running = False
+                break
 
     def on_render(self):
         # Clear screen
@@ -121,8 +125,8 @@ class App:
 
         # Draw previous move
         if self.board.prev_move is not None:
-            self.draw_line(self.board.players[(self.board.current_player-1) % self.board.nplayers].color, 
-                self.board.prev_move[0], self.board.prev_move[1], width=2)
+            self.draw_line(self.board.players[self.board.prev_move[0]].color, 
+                self.board.prev_move[1][0], self.board.prev_move[1][1], width=2)
 
         # Draw a line to valid moves
         for orig, targ in self.board.getPossibleActions():
@@ -163,6 +167,7 @@ class App:
         if self.on_init() == False:
             self._running = False
  
+        self.on_render()
         while( self._running ):
             for event in pygame.event.get():
                 self.on_event(event)
@@ -199,5 +204,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS, PlayerType.TRIVIAL_MCTS])
+    theApp = App([PlayerType.TRIVIAL_MCTS, PlayerType.TRIVIAL_MCTS],
+                    bot_time_limit_ms=1000)
     theApp.on_execute()
