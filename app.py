@@ -38,6 +38,8 @@ class App:
 
         self.board = GameBoard(len(players))
 
+        self.pending_action = None
+
         self.score_pos = (300,30)
         self.score_spacing = 30
 
@@ -73,12 +75,15 @@ class App:
             elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]:
                 if self.selected_piece is not None:
                     if (self.selected_piece.pos.coords, selected) in self.board.getPossibleActions():
-                        self.board = self.board.takeAction((self.selected_piece.pos.coords, selected))
-                        self.selected_piece = None
+                        self.pending_action = (self.selected_piece.pos.coords, selected)
     
     def on_loop(self):
-        # AI moves
-        if self.controllers[self.board.current_player] is not None:
+        # Player or AI moves
+        if self.pending_action is not None:
+            self.board = self.board.takeAction(self.pending_action)
+            self.selected_piece = None
+            self.pending_action = None
+        elif self.controllers[self.board.current_player] is not None:
             self.selected_piece = None
             # Pass in a deep copy of the board in case the bot wants to make any changes or monkey patch the reward function
             self.board = self.board.takeAction(self.controllers[self.board.current_player].get_move(copy.deepcopy(self.board)))
