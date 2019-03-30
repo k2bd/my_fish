@@ -4,6 +4,7 @@ import hex_coords
 import pygame
 import random
 from hex_coords import Hex, qoffset_to_cube, OffsetCoord
+import copy
 
 piece_palette = [
     pygame.Color('0x123ABC'),
@@ -30,6 +31,8 @@ class GameBoard:
         
         self.players = [Player(i) for i in range(nplayers)]
         self.current_player = 0
+
+        self.PROTAGONIST = 0 # N.B. this is not used for game simulation, but you might use it to track who you are.
 
         fish_bank = [30,20,10]
 
@@ -68,14 +71,6 @@ class GameBoard:
                 target.occupant = piece
                 player.pieces.append(piece)
 
-        # TEMP:
-        print(self.getPossibleActions())
-
-#class GameState:
-#    def __init__(self):
-#        self.pieces = [] # [(player, coord)]
-#        
-
     # Action is a tuple of (origin, destination)
     def getPossibleActions(self):
         actions = []
@@ -92,13 +87,33 @@ class GameBoard:
     
     def takeAction(self, action):
         if action in self.getPossibleActions():
+            dup = copy.deepcopy(self)
+            orig, targ = action
+            dup.players[dup.current_player].points += dup.board[orig].value
+            for piece in dup.players[dup.current_player].pieces:
+                if piece.pos.coords == orig:
+                    piece.pos.coords = targ
+                    dup.board[targ].occupant = piece
+                    break
+            else:
+                sys.exit("Can't find current player's moved piece")
+            
+            _ = dup.board.pop(orig)
+            dup.current_player = (dup.current_player + 1) % dup.nplayers
 
-    
+            return dup
+        else:
+            print("Invalid Move!")
+            return self
+
     def isTerminal(self):
-        pass
+        if len(self.getPossibleActions()) == 0:
+            return True
+        else:
+            return False
     
     def getReward(self):
-        pass
+        return all(self.players[self.PROTAGONIST].points > self.players[i] for i in range(self.nplayers) if i != self.PROTAGONIST)
 
 class Player:
     def __init__(self, num): # TODO: controller, etc
