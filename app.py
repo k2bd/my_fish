@@ -7,9 +7,15 @@ from gameboard import GameBoard
 import hex_coords
 from hex_coords import Layout
 import random
+from enum import Enum
+import copy
+
+class PlayerType(Enum):
+    HUMAN = 1
+    TRIVIAL_MCTS = 2
 
 class App:
-    def __init__(self):
+    def __init__(self, players):
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640, 400
@@ -21,7 +27,16 @@ class App:
 
         self.layout = Layout(hex_coords.layout_flat, self.hex_size, hex_coords.Point(50,50))
         
-        self.board = GameBoard(4)
+        self.controllers = []
+        for i in range(len(players)):
+            p = players[i]
+            if p == PlayerType.HUMAN:
+                self.controllers.append(None)
+            elif p == PlayerType.TRIVIAL_MCTS:
+                from bots.trivial_mcts import MctsPlayer
+                self.controllers.append(MctsPlayer(i))
+
+        self.board = GameBoard(len(players))
 
         self.score_pos = (300,30)
         self.score_spacing = 30
@@ -45,20 +60,28 @@ class App:
 
         if event.type == pygame.QUIT:
             self._running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-            self.selected_piece = None
-            if selected in self.board.board.keys():
-                for i in range(self.board.pieces_per_player):
-                    if self.board.players[self.board.current_player].pieces[i].pos.coords == selected:
-                        self.selected_piece = self.board.players[self.board.current_player].pieces[i]
-                        break
-        elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]:
-            if self.selected_piece is not None:
-                if (self.selected_piece.pos.coords, selected) in self.board.getPossibleActions():
-                    self.board = self.board.takeAction((self.selected_piece.pos.coords, selected))
-                    self.selected_piece = None
+        
+        if self.controllers[self.board.current_player] is None:
+            # Local player
+            if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                self.selected_piece = None
+                if selected in self.board.board.keys():
+                    for i in range(self.board.pieces_per_player):
+                        if self.board.players[self.board.current_player].pieces[i].pos.coords == selected:
+                            self.selected_piece = self.board.players[self.board.current_player].pieces[i]
+                            break
+            elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]:
+                if self.selected_piece is not None:
+                    if (self.selected_piece.pos.coords, selected) in self.board.getPossibleActions():
+                        self.board = self.board.takeAction((self.selected_piece.pos.coords, selected))
+                        self.selected_piece = None
     
     def on_loop(self):
+        # AI moves
+        if self.controllers[self.board.current_player] is not None:
+            self.selected_piece = None
+            # Pass in a deep copy of the board in case the bot wants to make any changes or monkey patch the reward function
+            self.board = self.board.takeAction(self.controllers[self.board.current_player].get_move(copy.deepcopy(self.board)))
         
         # Tile Highlighting
         for tile in self.board.board.values():
@@ -67,6 +90,12 @@ class App:
         selected = hex_coords.hex_round(hex_coords.pixel_to_hex(self.layout, hex_coords.Point(mpos[0], mpos[1])))
         if selected in self.board.board.keys():
             self.board.board[selected].highlighted = True
+
+        if len(self.board.getPossibleActions()) == 0:
+            for i in range(self.board.players):
+                player = self.board.players[i]
+                print(i, player.score)
+            self._running = False
 
     def on_render(self):
         # Clear screen
@@ -160,5 +189,5 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App()
+    theApp = App([PlayerType.HUMAN, PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS, PlayerType.TRIVIAL_MCTS])
     theApp.on_execute()

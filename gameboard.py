@@ -13,6 +13,12 @@ piece_palette = [
     pygame.Color('0xC3B2A1'),
 ]
 
+tile_palette = [
+    pygame.Color('0x2A3026'),
+    pygame.Color('0xA3506E'),
+    pygame.Color('0xBE783C'),
+]
+
 class GameBoard:
     
     def __init__(self, nplayers):
@@ -30,9 +36,9 @@ class GameBoard:
             sys.exit("Invalid # of players!")
         
         self.players = [Player(i) for i in range(nplayers)]
-        self.current_player = 0
+        self.current_player = random.randint(0, nplayers-1)
 
-        self.PROTAGONIST = 0 # N.B. this is not used for game simulation, but you might use it to track who you are.
+        self.PROTAGONIST = None # N.B. this is not used for game simulation, but is used in the reward function
 
         fish_bank = [30,20,10]
 
@@ -113,7 +119,10 @@ class GameBoard:
             return False
     
     def getReward(self):
-        return all(self.players[self.PROTAGONIST].points > self.players[i] for i in range(self.nplayers) if i != self.PROTAGONIST)
+        if all(self.players[self.PROTAGONIST].points > self.players[i].points for i in range(self.nplayers) if i != self.PROTAGONIST):
+            return 1
+        else:
+            return 0
 
 class Player:
     def __init__(self, num): # TODO: controller, etc
@@ -134,12 +143,7 @@ class GameTile:
         self.coords = coord
         self.occupant = None
 
-        if self.value == 1:
-            self.color = pygame.Color(255, 0, 0, 255)
-        elif self.value == 2:
-            self.color = pygame.Color(0, 255, 0, 255)
-        elif self.value == 3:
-            self.color = pygame.Color(0, 0, 255, 255)
+        self.color = tile_palette[value-1]
 
 if __name__ == "__main__":
     test_board = GameBoard()
