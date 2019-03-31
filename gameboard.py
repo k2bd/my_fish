@@ -79,15 +79,31 @@ class GameBoard:
                 player.pieces.append(piece)
 
     # Action is a tuple of (origin, destination)
-    def getPossibleActions(self):
+    def getPossibleActions(self, objects_to_consider = None):
+        # objects_to_consider can be pieces, tiles, or coordinates
+
+        if not isinstance(objects_to_consider, list):
+            objects_to_consider = [objects_to_consider]
+
+        if objects_to_consider[0] == None:
+            # Default: run over current player's pieces
+            coords_to_consider = [p.tile.coords for p in self.players[self.current_player].pieces]
+        elif isinstance(objects_to_consider[0], hex_coords.Hex):
+            pass
+        elif isinstance(objects_to_consider[0], GameTile):
+            coords_to_consider = [t.coords for t in objects_to_consider]
+        elif isinstance(objects_to_consider[0], GamePiece):
+            coords_to_consider = [p.tile.coords for p in objects_to_consider]
+        else:
+            raise ValueError("Did not recognised format of argument to gameboard.getPossibleActions")
+
         actions = []
 
-        for piece in self.players[self.current_player].pieces:
-            tile = piece.tile
+        for coord in coords_to_consider:
             for direction in hex_coords.hex_directions:
-                targ = hex_coords.hex_add(direction, tile.coords) 
+                targ = hex_coords.hex_add(direction, coord) 
                 while targ in self.board and self.board[targ].occupant is None:
-                    actions.append((tile.coords, targ))
+                    actions.append((coord, targ))
                     targ = hex_coords.hex_add(direction, targ)
         
         return actions
@@ -186,4 +202,4 @@ class GameTile:
 
 if __name__ == "__main__":
     test_board = GameBoard()
-    print(test_board.board)
+    rint(test_board.board)
