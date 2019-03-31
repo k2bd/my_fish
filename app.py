@@ -212,6 +212,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.HUMAN], PlayerType.TRIVIAL_MCTS],
+    theApp = App([PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS],
                     bot_time_limit_ms=1000)
     theApp.on_execute()
