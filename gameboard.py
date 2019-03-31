@@ -202,4 +202,4 @@ class GameTile:
 
 if __name__ == "__main__":
     test_board = GameBoard()
-    rint(test_board.board)
+    print(test_board.board)
