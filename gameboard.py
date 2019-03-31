@@ -83,7 +83,7 @@ class GameBoard:
         actions = []
 
         for piece in self.players[self.current_player].pieces:
-            tile = piece.pos
+            tile = piece.tile
             for direction in hex_coords.hex_directions:
                 targ = hex_coords.hex_add(direction, tile.coords) 
                 while targ in self.board and self.board[targ].occupant is None:
@@ -96,11 +96,12 @@ class GameBoard:
         if action in self.getPossibleActions():
             dup = copy.deepcopy(self)
             orig, targ = action
+
             dup.players[dup.current_player].points += dup.board[orig].value
             dup.prev_move = (dup.current_player, (orig, targ))
             for piece in dup.players[dup.current_player].pieces:
-                if piece.pos.coords == orig:
-                    piece.pos.coords = targ
+                if piece.tile.coords == orig:
+                    piece.tile = dup.board[targ]
                     dup.board[targ].occupant = piece
                     break
             else:
@@ -129,6 +130,39 @@ class GameBoard:
         else:
             return -1
 
+    def reachable(self, i_player, i_piece):
+        # Finds the tiles and other pieces that are on the same "island" of tiles as this one
+        piece = self.players[i_player].pieces[i_piece]
+
+        tiles_to_check = set([piece.tile])
+        checked_tiles = set([])
+        reached_pieces = set([])
+
+        while len(tiles_to_check) > 0:
+            tile = tiles_to_check.pop()
+            checked_tiles.add(tile)
+            for i in range(6):
+                # Loop over neighboring tiles
+                neighboring_coords = hex_coords.hex_neighbor(tile.coords, i)
+                if neighboring_coords not in self.board.keys():
+                    # This coordinate is off the edge of the board
+                    continue
+                neighboring_tile = self.board[neighboring_coords]
+
+                if neighboring_tile in checked_tiles or neighboring_tile in tiles_to_check:
+                    # Ignore tiles we've reached previously
+                    continue
+                elif neighboring_tile.occupant is not None:
+                    # Don't count tiles that are occupied
+                    reached_pieces.add(neighboring_tile.occupant)
+                else:
+                    tiles_to_check.add(neighboring_tile)
+
+        # Don't return my own tile within checked_tiles
+        checked_tiles.remove(piece.tile)
+
+        return checked_tiles, reached_pieces
+
 class Player:
     def __init__(self, num): # TODO: controller, etc
         self.points = 0
@@ -136,9 +170,9 @@ class Player:
         self.pieces = []
 
 class GamePiece:
-    def __init__(self, owner, pos):
+    def __init__(self, owner, tile):
         self.owner = owner
-        self.pos = pos
+        self.tile = tile
 
 class GameTile:
 
