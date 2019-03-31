@@ -65,14 +65,17 @@ class App:
         
         if self.controllers[self.board.current_player] is None:
             # Local player
-            if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+            if (event.type == pygame.MOUSEBUTTONDOWN) and (self.selected_piece is None) and pygame.mouse.get_pressed()[0]:
+                # Left click when there is no piece selected
                 self.selected_piece = None
                 if selected in self.board.board.keys():
                     for i in range(self.board.pieces_per_player):
                         if self.board.players[self.board.current_player].pieces[i].pos.coords == selected:
                             self.selected_piece = self.board.players[self.board.current_player].pieces[i]
                             break
-            elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]:
+            elif event.type == pygame.MOUSEBUTTONDOWN and (self.selected_piece is not None) \
+                    and any([pygame.mouse.get_pressed()[0], pygame.mouse.get_pressed()[2]]):
+                # If we have a piece selected, and we left or right click
                 if self.selected_piece is not None:
                     if (self.selected_piece.pos.coords, selected) in self.board.getPossibleActions():
                         self.pending_action = (self.selected_piece.pos.coords, selected)
