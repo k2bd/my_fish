@@ -83,6 +83,8 @@ class App:
                 if self.selected_piece is not None:
                     if (self.selected_piece.tile.coords, selected) in self.board.getPossibleActions():
                         self.pending_action = (self.selected_piece.tile.coords, selected)
+                    elif pygame.mouse.get_pressed()[0]:
+                        self.selected_piece = None
     
     def on_loop(self):
         # Player or AI moves
