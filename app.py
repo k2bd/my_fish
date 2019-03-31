@@ -13,6 +13,7 @@ import copy
 class PlayerType(Enum):
     HUMAN = 1
     TRIVIAL_MCTS = 2
+    EBL_MCTS = 3
 
 class App:
     def __init__(self, players, bot_time_limit_ms = 5000):
@@ -35,6 +36,9 @@ class App:
             elif p == PlayerType.TRIVIAL_MCTS:
                 from bots.trivial_mcts import MctsPlayer
                 self.controllers.append(MctsPlayer(i, bot_time_limit_ms))
+            elif p == PlayerType.EBL_MCTS:
+                import bots.ebl_mcts as ebl_mcts
+                self.controllers.append(ebl_mcts.Player(i))
 
         self.board = GameBoard(len(players))
 
@@ -70,15 +74,15 @@ class App:
                 self.selected_piece = None
                 if selected in self.board.board.keys():
                     for i in range(self.board.pieces_per_player):
-                        if self.board.players[self.board.current_player].pieces[i].pos.coords == selected:
+                        if self.board.players[self.board.current_player].pieces[i].tile.coords == selected:
                             self.selected_piece = self.board.players[self.board.current_player].pieces[i]
                             break
             elif event.type == pygame.MOUSEBUTTONDOWN and (self.selected_piece is not None) \
                     and any([pygame.mouse.get_pressed()[0], pygame.mouse.get_pressed()[2]]):
                 # If we have a piece selected, and we left or right click
                 if self.selected_piece is not None:
-                    if (self.selected_piece.pos.coords, selected) in self.board.getPossibleActions():
-                        self.pending_action = (self.selected_piece.pos.coords, selected)
+                    if (self.selected_piece.tile.coords, selected) in self.board.getPossibleActions():
+                        self.pending_action = (self.selected_piece.tile.coords, selected)
     
     def on_loop(self):
         # Player or AI moves
@@ -90,6 +94,7 @@ class App:
             self.selected_piece = None
             # Pass in a deep copy of the board in case the bot wants to make any changes or monkey patch the reward function
             self.board = self.board.takeAction(self.controllers[self.board.current_player].get_move(copy.deepcopy(self.board)))
+
         
         # Tile Highlighting
         for tile in self.board.board.values():
@@ -134,7 +139,7 @@ class App:
         # Draw a line to valid moves
         for orig, targ in self.board.getPossibleActions():
             if (self.selected_piece is not None) and \
-               (self.selected_piece.pos.coords == orig) and \
+               (self.selected_piece.tile.coords == orig) and \
                (targ in self.board.board.keys()):
                 self.draw_line(self.board.players[self.board.current_player].color, orig, targ, width=3)
 
@@ -207,6 +212,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS],
+    theApp = App([PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS],
                     bot_time_limit_ms=1000)
     theApp.on_execute()
