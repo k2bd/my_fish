@@ -16,10 +16,12 @@ class PlayerType(Enum):
     EBL_MCTS = 3
 
 class App:
-    def __init__(self, players, bot_time_limit_ms = 5000):
+    def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False):
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640, 400
+        self.bot_time_limit = bot_time_limit_ms
+        self.disable_time_limit = disable_time_limit
 
         self.hex_radius = 20
         self.hex_size = hex_coords.Point(self.hex_radius, self.hex_radius)
@@ -95,8 +97,17 @@ class App:
         elif self.controllers[self.board.current_player] is not None:
             self.selected_piece = None
             # Pass in a deep copy of the board in case the bot wants to make any changes or monkey patch the reward function
-            self.board = self.board.takeAction(self.controllers[self.board.current_player].get_move(copy.deepcopy(self.board)))
-
+            c_time = pygame.time.get_ticks()
+            new_board = self.board.takeAction(self.controllers[self.board.current_player].get_move(copy.deepcopy(self.board)))
+            time_taken = pygame.time.get_ticks() - c_time
+            if time_taken <= self.bot_time_limit:
+                self.board = new_board
+            else:
+                print("Bot {} took too long by {} ms! Taking random action.".format(self.board.current_player, time_taken - self.bot_time_limit))
+                if self.disable_time_limit:
+                    self.board = new_board
+                else:
+                    self.board = self.board.takeAction(random.choice(self.board.getPossibleActions()))
         
         # Tile Highlighting
         for tile in self.board.board.values():
