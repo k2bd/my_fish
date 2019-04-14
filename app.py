@@ -18,7 +18,8 @@ class PlayerType(Enum):
     MJ = 5
 
 class App:
-    def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False):
+    def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False,
+                       cols=7, rows=17):
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640, 400
@@ -50,7 +51,7 @@ class App:
                 from bots.mj import PengWin
                 self.controllers.append(PengWin(i, bot_time_limit_ms))
 
-        self.board = GameBoard(len(players))
+        self.board = GameBoard(len(players), cols=cols, rows=rows)
 
         self.pending_action = None
 
@@ -234,5 +235,5 @@ class App:
 
 if __name__ == "__main__" :
     theApp = App([PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS],
-                    bot_time_limit_ms=1000)
+                    bot_time_limit_ms=1000)#, cols=5, rows=5)
     theApp.on_execute()

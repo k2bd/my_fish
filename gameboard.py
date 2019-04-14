@@ -20,9 +20,12 @@ tile_palette = [
 ]
 
 class GameBoard:
-    def __init__(self, nplayers):
+    def __init__(self, nplayers, cols=7, rows=17):
         self.board = {} # Coords : Tile
         self.offset = hex_coords.ODD
+
+        self.cols = cols
+        self.rows = rows
 
         self.prev_move = None
 
@@ -41,10 +44,15 @@ class GameBoard:
 
         self.PROTAGONIST = None # N.B. this is not used for game simulation, but is used in the reward function
 
-        fish_bank = [30,20,10]
+        #fish_bank = [30,20,10]
+        total_fish = ((rows//2) * cols) + ((rows % 2) * (cols//2 + 1))
+        print(total_fish)
+        fish_bank = [0, total_fish//3, total_fish//6]
+        fish_bank[0] = total_fish - sum(fish_bank)
+        print(fish_bank)
 
-        for col in range(7):
-            for row in range(8):
+        for col in range(cols):
+            for row in range(rows//2):
                 tile_value = random.randint(0,2)
                 while fish_bank[tile_value] == 0:
                     tile_value = random.randint(0,2)
@@ -55,14 +63,15 @@ class GameBoard:
                 self.board[coord] = GameTile(coord, tile_value)
 
         # Add the end of the board
-        for col in range(0,8,2):
-            tile_value = random.randint(0,2)
-            while fish_bank[tile_value] == 0:
+        if rows % 2 == 1:
+            for col in range(0,cols,2):
                 tile_value = random.randint(0,2)
-            fish_bank[tile_value] -= 1
-            tile_value += 1
-            coord = qoffset_to_cube(hex_coords.EVEN, OffsetCoord(col, 8))
-            self.board[coord] = GameTile(coord, tile_value)
+                while fish_bank[tile_value] == 0:
+                    tile_value = random.randint(0,2)
+                fish_bank[tile_value] -= 1
+                tile_value += 1
+                coord = qoffset_to_cube(hex_coords.EVEN, OffsetCoord(col, rows//2))
+                self.board[coord] = GameTile(coord, tile_value)
 
         assert all(fish_bank[i] == 0 for i in range(len(fish_bank)))
 

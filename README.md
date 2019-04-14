@@ -4,5 +4,5 @@
  - Return a move within the time limit or a random move will be made
 
 # TODO:
- - Currently expanding the game tree involves a deep copy of a game class. This can be vastly improved with a simpler game state.
+ - Currently expanding the game tree involves a deep copy of the whole gameBoard. This can be vastly improved with a simpler game state.
  - Trivial MCTS bot doesn't work, no idea why.
