@@ -15,6 +15,7 @@ class PlayerType(Enum):
     TRIVIAL_MCTS = 2
     EBL_MCTS = 3
     K2BD_MCTS = 4
+    MJ = 5
 
 class App:
     def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False):
@@ -45,6 +46,9 @@ class App:
             elif p == PlayerType.K2BD_MCTS:
                 from bots.k2bd_mcts import KevBot
                 self.controllers.append(KevBot(i, bot_time_limit_ms))
+            elif p == PlayerType.MJ:
+                from bots.mj import PengWin
+                self.controllers.append(PengWin(i, bot_time_limit_ms))
 
         self.board = GameBoard(len(players))
 
