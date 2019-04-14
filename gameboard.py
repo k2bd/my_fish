@@ -20,7 +20,7 @@ tile_palette = [
 ]
 
 class GameBoard:
-    def __init__(self, nplayers, cols=7, rows=17):
+    def __init__(self, nplayers, pieces=None, cols=7, rows=17):
         self.board = {} # Coords : Tile
         self.offset = hex_coords.ODD
 
@@ -30,14 +30,20 @@ class GameBoard:
         self.prev_move = None
 
         self.nplayers = nplayers
-        if self.nplayers == 2:
-            self.pieces_per_player = 4
-        elif self.nplayers == 3:
-            self.pieces_per_player = 3
-        elif self.nplayers == 4:
-            self.pieces_per_player = 2
+
+        if pieces is None:
+            # Use defaults
+            if self.nplayers == 2:
+                self.pieces_per_player = 4
+            elif self.nplayers == 3:
+                self.pieces_per_player = 3
+            elif self.nplayers == 4:
+                self.pieces_per_player = 2
+            else:
+                sys.exit("Invalid # of players!")
         else:
-            sys.exit("Invalid # of players!")
+            # Relax player constraints
+            self.pieces_per_player = pieces
         
         self.players = [Player(i) for i in range(nplayers)]
         self.current_player = random.randint(0, nplayers-1)

@@ -19,8 +19,11 @@ class PlayerType(Enum):
     WARIO = 6
 
 class App:
-    def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False,
-                       cols=7, rows=17):
+    def __init__(self, players, display = True, 
+                       bot_time_limit_ms = 5000, disable_time_limit = False,
+                       pieces=None, cols=7, rows=17):
+        self.display = display
+
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640, 400
@@ -55,7 +58,7 @@ class App:
                 from bots.wariobot import WarioBot
                 self.controllers.append(WarioBot(i, greed=0.7))
 
-        self.board = GameBoard(len(players), cols=cols, rows=rows)
+        self.board = GameBoard(len(players), pieces=pieces, cols=cols, rows=rows)
 
         self.pending_action = None
 
@@ -67,9 +70,11 @@ class App:
     def on_init(self):
         pygame.init()
         pygame.font.init()
-        self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        self._background = pygame.Surface(self._display_surf.get_size())
-        self._background.fill((0,0,0))
+        
+        if self.display:
+            self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+            self._background = pygame.Surface(self._display_surf.get_size())
+            self._background.fill((0,0,0))
 
         self._running = True
 
@@ -141,6 +146,8 @@ class App:
                 break
 
     def on_render(self):
+        if not self.display:
+            return
         # Clear screen
         self._display_surf.blit(self._background, (0,0))
 
@@ -194,6 +201,7 @@ class App:
         pygame.display.flip()
 
     def on_cleanup(self):
+        self.font = None
         pygame.font.quit()
         pygame.quit()
  
@@ -238,6 +246,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.WARIO],
+    theApp = App([PlayerType.WARIO, PlayerType.WARIO],
                     bot_time_limit_ms=5000)#, cols=5, rows=5)
     theApp.on_execute()

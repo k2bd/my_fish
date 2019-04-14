@@ -16,7 +16,6 @@ class WarioBot:
         best_actions = set()
 
         if random.random() < self.greed:
-            print("GREED")
             for action in currentState.getPossibleActions():
                 tgt_value = currentState.board[action[1]].value
 
