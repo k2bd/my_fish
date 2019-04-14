@@ -5,7 +5,7 @@ class WarioBot:
     """
         Dumb meme bot that makes moves based on what maximizes potential target value out of the moves that maximize target value
     """
-    def __init__(self, pnum, greed=0.7):
+    def __init__(self, pnum, greed=0.8):
         self.pnum = pnum
         self.greed = greed
 
@@ -16,7 +16,6 @@ class WarioBot:
         best_actions = set()
 
         if random.random() < self.greed:
-            print("GREED")
             for action in currentState.getPossibleActions():
                 tgt_value = currentState.board[action[1]].value
 
