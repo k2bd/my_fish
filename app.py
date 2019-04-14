@@ -56,7 +56,7 @@ class App:
                 self.controllers.append(PengWin(i, bot_time_limit_ms))
             elif p == PlayerType.WARIO:
                 from bots.wariobot import WarioBot
-                self.controllers.append(WarioBot(i, greed=0.7))
+                self.controllers.append(WarioBot(i))
 
         self.board = GameBoard(len(players), pieces=pieces, cols=cols, rows=rows)
 

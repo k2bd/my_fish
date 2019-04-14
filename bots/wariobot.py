@@ -5,7 +5,7 @@ class WarioBot:
     """
         Dumb meme bot that makes moves based on what maximizes potential target value out of the moves that maximize target value
     """
-    def __init__(self, pnum, greed=0.7):
+    def __init__(self, pnum, greed=0.95):
         self.pnum = pnum
         self.greed = greed
 
