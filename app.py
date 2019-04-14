@@ -145,6 +145,9 @@ class App:
             if self.board.current_player == orig_player:
                 for i in range(len(self.board.players)):
                     player = self.board.players[i]
+                    # Add all the player's current piece tiles to their score
+                    for piece in player.pieces:
+                        player.points += piece.tile.value
                     print(i, player.points)
                 self._running = False
                 break
