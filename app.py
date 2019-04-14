@@ -11,6 +11,7 @@ from enum import Enum
 import copy
 
 class PlayerType(Enum):
+    RANDOM = 0
     HUMAN = 1
     TRIVIAL_MCTS = 2
     EBL_MCTS = 3
@@ -42,6 +43,9 @@ class App:
             p = players[i]
             if p == PlayerType.HUMAN:
                 self.controllers.append(None)
+            elif p == PlayerType.RANDOM:
+                from bots.randombot import RandomBot
+                self.controllers.append(RandomBot())
             elif p == PlayerType.TRIVIAL_MCTS:
                 from bots.trivial_mcts import MctsPlayer
                 self.controllers.append(MctsPlayer(i, bot_time_limit_ms))
@@ -246,6 +250,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.WARIO, PlayerType.WARIO],
+    theApp = App([PlayerType.HUMAN, PlayerType.RANDOM],
                     bot_time_limit_ms=5000)#, cols=5, rows=5)
     theApp.on_execute()
