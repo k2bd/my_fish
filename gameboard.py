@@ -46,10 +46,11 @@ class GameBoard:
 
         #fish_bank = [30,20,10]
         total_fish = ((rows//2) * cols) + ((rows % 2) * (cols//2 + 1))
-        print(total_fish)
+
         fish_bank = [0, total_fish//3, total_fish//6]
         fish_bank[0] = total_fish - sum(fish_bank)
-        print(fish_bank)
+
+        print("Setting up game with {} fish distributed as {}".format(total_fish, fish_bank))
 
         for col in range(cols):
             for row in range(rows//2):
@@ -97,7 +98,7 @@ class GameBoard:
         if objects_to_consider[0] == None:
             # Default: run over current player's pieces
             coords_to_consider = [p.tile.coords for p in self.players[self.current_player].pieces]
-        elif isinstance(objects_to_consider[0], hex_coords.Hex):
+        elif objects_to_consider[0].__str__().startswith("Hex"):
             pass
         elif isinstance(objects_to_consider[0], GameTile):
             coords_to_consider = [t.coords for t in objects_to_consider]

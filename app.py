@@ -16,6 +16,7 @@ class PlayerType(Enum):
     EBL_MCTS = 3
     K2BD_MCTS = 4
     MJ = 5
+    WARIO = 6
 
 class App:
     def __init__(self, players, bot_time_limit_ms = 5000, disable_time_limit = False,
@@ -50,6 +51,9 @@ class App:
             elif p == PlayerType.MJ:
                 from bots.mj import PengWin
                 self.controllers.append(PengWin(i, bot_time_limit_ms))
+            elif p == PlayerType.WARIO:
+                from bots.wariobot import WarioBot
+                self.controllers.append(WarioBot(i, greed=0.7))
 
         self.board = GameBoard(len(players), cols=cols, rows=rows)
 
@@ -234,6 +238,6 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.TRIVIAL_MCTS],
-                    bot_time_limit_ms=1000)#, cols=5, rows=5)
+    theApp = App([PlayerType.HUMAN, PlayerType.WARIO],
+                    bot_time_limit_ms=5000)#, cols=5, rows=5)
     theApp.on_execute()
