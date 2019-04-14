@@ -41,4 +41,6 @@ class WarioBot:
                 best_action = action
                 best_potential_pts = potential_pts
 
+        if best_action is None:
+            return random.choice(currentState.getPossibleActions())
         return best_action
