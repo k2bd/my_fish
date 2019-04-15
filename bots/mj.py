@@ -3,75 +3,76 @@
 from gameboard import GameBoard
 from hex_coords import Hex
 
-import random
-from copy import deepcopy
+import numpy as np
+from math import floor
 
 class PengWin:
     '''Wins at being a penguin.'''
     def __init__(self, pnum, time_lim_ms=5000):
         self.pnum = pnum
-        random.seed()
+        self.time_lim_ms = time_lim_ms
+        calc_time_ms = 0.18
+        self.depths = [1000000, 1000000] \
+                    + [floor(np.log(time_lim_ms/calc_time_ms)/np.log(x)) for x in range(2,100)]
 
     def get_move(self, initialState):
         net = Netwerk(initialState)
-        move,_,_ = next_move(net, 3, self.pnum)
+        max_num_neighbours = net.max_num_neighbours()
+        depth = self.depths[max_num_neighbours]
+        move,_,_ = next_move(net, depth, self.pnum)
         return (move[0].tile.coords, move[1].tile.coords)
 
 class Node:
     '''A network node representing a tile, 
        with links to every tile which is one move away.'''
     def __init__(self,hex,tile):
-        self.id = id
         self.coord = [hex.q, hex.r, hex.s]
+        
+        # The original map tile. N.B. this is not updated as Node is updated.
         self.tile = tile
-        self.plus = [[],[],[]]
-        self.minus = [[],[],[]]
+        
+        # Neighbours with: [[=q&>r, =r&>s, =s&>q], [=q&<r, =r&<s, =s&<q]].
+        self.neighbours = [[[],[],[]],[[],[],[]]]
+        
+        # Points to the occupant if occupied.
         self.occupant = None
+        
+        # True if the node is occupied or has been removed.
         self.used = False
     
-    def neighbours(self):
+    def get_neighbours(self):
         output = []
-        for i in range(3):
-            for node in self.plus[i]:
-                if node.used:
-                    break
-                output.append(node)
-            for node in self.minus[i]:
-                if node.used:
-                    break
-                output.append(node)
+        for half in self.neighbours:
+            for line in half:
+                for node in line:
+                    if node.used:
+                        break
+                    output.append(node)
         return output
     
     def sort_and_cut(self):
         '''Sort the inline links, and cut at the first impassable link.'''
-        for i in range(3):
-            self.plus[i] = sorted(self.plus[i],
-                                  key=lambda x:x.coord[i-1])
-            for j,x in enumerate(self.plus[i]):
-                if (x.tile.occupant is not None) or \
-                   (x.coord[i-1]!=self.coord[i-1]+j+1):
-                    self.plus[i] = self.plus[i][:j]
-                    break
-            
-            self.minus[i] = sorted(self.minus[i],
-                                   key=lambda x:x.coord[i-1],
-                                   reverse=True)
-            for j,x in enumerate(self.minus[i]):
-                if (x.tile.occupant is not None) or \
-                   (x.coord[i-1]!=self.coord[i-1]-j-1):
-                    self.minus[i] = self.minus[i][:j]
-                    break
+        for i in range(2):
+            for j in range(3):
+                self.neighbours[i][j] = sorted(self.neighbours[i][j],
+                                               key=lambda x:x.coord[j-1],
+                                               reverse=i==1)
+                for k,x in enumerate(self.neighbours[i][j]):
+                    if (x.tile.occupant is not None) or \
+                       (abs(x.coord[j-1]-self.coord[j-1])!=k+1):
+                        self.neighbours[i][j] = self.neighbours[i][j][:k]
+                        break
     
 def link_if_inline(node1,node2):
     '''Check if two nodes are inline, and link them if they are.'''
     for i in range(3):
         if node2.coord[i]==node1.coord[i]:
             if node2.coord[i-1]>node1.coord[i-1]:
-                node1.plus[i].append(node2)
-                node2.minus[i].append(node1)
+                node1.neighbours[0][i].append(node2)
+                node2.neighbours[1][i].append(node1)
             else:
-                node1.minus[i].append(node2)
-                node2.plus[i].append(node1)
+                node1.neighbours[1][i].append(node2)
+                node2.neighbours[0][i].append(node1)
 
 class Piece:
     '''Effectively a GamePiece, with reference to a node.'''
@@ -108,6 +109,9 @@ class Netwerk:
         move[1].occupant = None
         move[0].occupant.node = move[0]
         move[1].used = False
+    
+    def max_num_neighbours(self):
+        return max([len(x.get_neighbours()) for x in self.nodes])
 
 def hex(coord):
     return Hex(coord[0],coord[1],coord[2])
@@ -117,7 +121,7 @@ def next_move(net,depth,next_player):
     best_heuristic = None
     best_score = None
     for piece in net.pieces[next_player]:
-        for neighbour in piece.node.neighbours():
+        for neighbour in piece.node.get_neighbours():
             move = (piece.node, neighbour)
             net.make_move(move)
             heuristic = get_heuristic(net, depth-1, next_player)
