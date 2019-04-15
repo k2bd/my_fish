@@ -9,6 +9,7 @@ from hex_coords import Layout
 import random
 from enum import Enum
 import copy
+import argparse
 
 class PlayerType(Enum):
     RANDOM = 0
@@ -253,6 +254,18 @@ class App:
             width)
 
 if __name__ == "__main__" :
-    theApp = App([PlayerType.HUMAN, PlayerType.RANDOM],
-                    bot_time_limit_ms=5000)#, cols=5, rows=5)
+    
+    # Set up argparse.
+    parser = argparse.ArgumentParser(description='To fish the very best.')
+    parser.add_argument('-p',
+                        '--players',
+                        nargs = '+',
+                        choices = [x.name.lower() for x in PlayerType],
+                        default=['human','random'],
+                        help = 'Players.')
+    args = parser.parse_args()
+    
+    # Parse players and start app.
+    players = [PlayerType[x.upper()] for x in args.players]
+    theApp = App(players, bot_time_limit_ms=5000)#, cols=5, rows=5)
     theApp.on_execute()
