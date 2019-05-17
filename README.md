@@ -1,5 +1,5 @@
 # How to play:
-![Rules (pdf)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&uact=8&ved=2ahUKEwiP3PftuM_hAhU2SxUIHexBAt4QFjABegQIBBAC&url=https%3A%2F%2Fwww.fantasyflightgames.com%2Fffg_content%2Fhey-thats-my-fish-board-game%2Fhey-thats-my-fish-rulebook.pdf&usg=AOvVaw07sWl7C1ncESqZMjQyPqKi)
+[Rules (pdf)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&uact=8&ved=2ahUKEwiP3PftuM_hAhU2SxUIHexBAt4QFjABegQIBBAC&url=https%3A%2F%2Fwww.fantasyflightgames.com%2Fffg_content%2Fhey-thats-my-fish-board-game%2Fhey-thats-my-fish-rulebook.pdf&usg=AOvVaw07sWl7C1ncESqZMjQyPqKi)
 
 Click on a piece to select it and again to move it. Click an invalid move to deselect. Player types are defined by the players array passed to the app's init. Other game params are also controlled there. Initial positions are currently randomized.
 
