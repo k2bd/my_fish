@@ -251,9 +251,7 @@ class App:
         pygame.quit()
 
     def on_execute(self):
-        if not self.on_init():
-            self._running = False
-
+        self.on_init()
         self.on_render()
         while self._running:
             for event in pygame.event.get():
